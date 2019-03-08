@@ -1,6 +1,6 @@
 source 'https://rubygems.org'
 
-gem 'rails', '~> 5.2'
+gem 'rails', '= 6.0.0.beta2'
 
 # Grape API
 gem 'grape'
@@ -50,7 +50,7 @@ group :development, :test do
   gem 'spring'
 
   # Model Annotations
-  gem 'annotate'
+  gem 'annotate', github: 'ctran/annotate_models'
 
   # Seeding information
   gem 'faker'
