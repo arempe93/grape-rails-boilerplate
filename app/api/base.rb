@@ -8,9 +8,7 @@ end
 module API
   class Base < Grape::API
     use Grape::Middleware::Globals
-    use Middleware::RequestId
-    insert_after Grape::Middleware::Formatter,
-                 Middleware::Logger
+    use Middleware::Logger, headers: %w[cache-control]
 
     prefix :api
     format :json

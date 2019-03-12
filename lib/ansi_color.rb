@@ -10,13 +10,18 @@ module ANSIColor
     yellow: '33',
     blue: '34',
     magenta: '35',
-    cyan: '36'
+    cyan: '36',
+    white: '37'
   }.freeze
 
-  CODES.each do |color, code|
-    define_method(color) do |string, bold: false|
-      attributes = bold ? "#{code};1" : code
-      "#{ESCAPE}#{attributes}m#{string}#{ESCAPE}#{RESET}"
+  CODES.each do |name, code|
+    define_method(name) do |string, bold: false|
+      color(string, code: code, bold: bold)
     end
+  end
+
+  def color(string, code:, bold: false)
+    attributes = bold ? "#{code};1" : code
+    "#{ESCAPE}#{attributes}m#{string}#{ESCAPE}#{RESET}"
   end
 end

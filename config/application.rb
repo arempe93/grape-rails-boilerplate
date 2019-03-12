@@ -8,6 +8,7 @@ Bundler.require(*Rails.groups)
 
 require_relative '../lib/tagged_timestamp_logger'
 require_relative '../lib/grape_filter_logger'
+require_relative '../lib/middleware/request_id'
 
 # TODO: change name to application name
 module YourApplication

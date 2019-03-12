@@ -1,10 +1,7 @@
 # frozen_string_literal: true
 
-require_relative './logger/database.rb'
-
 module Middleware
-  class Logger < Grape::Middleware::Globals
-    include Middleware::Database
+  class Logger < Grape::Middleware::Base
     include ANSIColor
     include ErrorHandling
 
@@ -21,13 +18,8 @@ module Middleware
 
       @options = options
       @logger = Rails.application.config.logger
-      @filter = ActionDispatch::Http::ParameterFilter.new(Rails.application.config.filter_parameters)
+      @filter = ActiveSupport::ParameterFilter.new(Rails.application.config.filter_parameters)
       @display_headers = headers
-
-      ActiveSupport::Notifications.subscribe('sql.active_record') do |*args|
-        event = ActiveSupport::Notifications::Event.new(*args)
-        append_db_runtime(event)
-      end
     end
 
     def call!(env)
@@ -35,7 +27,7 @@ module Middleware
 
       if logger.respond_to?(:tagged)
         request_id = RequestStore.store[:request_id]
-        logger.tagged(cyan(request_id)) { perform }
+        logger.tagged(black(request_id)) { perform }
       else
         perform
       end
@@ -51,9 +43,12 @@ module Middleware
         log_failure(error)
       end
 
-      response.tap do |(status, headers, _body)|
-        log_response(status, headers)
+      response.tap do |(status, _headers, _body)|
+        log_response(status)
       end
+    rescue => e
+      log_error(e)
+      raise e
     end
 
     def log_request
@@ -61,18 +56,15 @@ module Middleware
       method = request.request_method
 
       logger.info ''
-      logger.info format("Started %<method>s '%<path>s'", method: green(method, bold: true),
-                                                          path: cyan(request.path))
-      logger.info "Processing by #{red(processed_by, bold: true)}"
-      logger.info "  Parameters: #{yellow(parameters)}"
-      logger.info "  Headers: #{yellow(print_display_headers)}" if @display_headers
+      logger.info format('%<method>s %<path>s -> %<processor>s', method: white(method, bold: true),
+                                                                 path: white(request.path),
+                                                                 processor: cyan(processed_by, bold: true))
+      logger.info "  Parameters: #{magenta(parameters)}"
+      logger.info "  Headers: #{magenta(filtered_headers)}" if @display_headers
     end
 
-    def log_response(status, headers = {})
-      headers['X-Runtime'] = total_runtime
-      headers['X-DB-Runtime'] = total_db_runtime
-
-      logger.info green("Completed #{status}: total=#{total_runtime}ms - db=#{total_db_runtime}ms")
+    def log_response(status)
+      logger.info green("Completed #{status} in #{total_runtime}ms")
       logger.info ''
     end
 
@@ -80,10 +72,16 @@ module Middleware
       message = error[:message]&.fetch(:message, error[:message].to_s)
       message ||= '<NO RESPONSE>'
 
-      logger.info magenta("  ! Failing with #{error[:status]} (#{message})")
+      logger.warn yellow("  ! Failing with #{error[:status]} (#{message})", bold: true)
 
       error[:headers] ||= {}
-      log_response(error[:status], error[:headers])
+      log_response(error[:status])
+    end
+
+    def log_error(error)
+      logger.error red("UNCAUGHT EXCEPTION: (#{error.message})", bold: true)
+      logger.error red(error.backtrace.inspect)
+      logger.info ''
     end
 
     def parameters
@@ -101,7 +99,7 @@ module Middleware
         normalized_name = name.titlecase.tr(' ', '-') # X-Sample-header-NAME => X-Sample-Header-Name
         header_value = request_headers.fetch(normalized_name, nil)
 
-        acc[normalized_name.to_sym] = header_value if header_value
+        acc[normalized_name] = header_value if header_value
       end
     end
 
@@ -111,11 +109,11 @@ module Middleware
 
     def start_timings
       @runtime_start = Time.now
-      reset_db_runtime
+      @total_runtime = nil
     end
 
     def total_runtime
-      ((Time.now - @runtime_start) * 1_000).round(2)
+      @total_runtime ||= ((Time.now - @runtime_start) * 1_000).round(2)
     end
 
     def processed_by

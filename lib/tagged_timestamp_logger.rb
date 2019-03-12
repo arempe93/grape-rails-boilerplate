@@ -6,12 +6,23 @@ module TaggedTimestampLogger
   module Formatter
     extend ANSIColor
 
+    ERROR = 'ERROR'
+    WARN = 'WARN'
+
     module_function
 
-    def call(_severity, time, _progname, message)
-      timestamp = time.utc.strftime('%Y-%m-%d %H-%M-%S.%L')
+    def call(severity, time, _progname, message)
+      "#{format_timestamp(time, severity)} #{tags_text}#{message}\n"
+    end
 
-      "#{black("[#{timestamp}]", bold: true)} #{tags_text}#{message}\n"
+    def format_timestamp(time, severity)
+      stamp = "[#{time.utc.strftime('%Y-%m-%d %H-%M-%S.%L')}]"
+
+      case severity
+      when ERROR then red(stamp, bold: true)
+      when WARN then yellow(stamp, bold: true)
+      else black(stamp, bold: true)
+      end
     end
   end
 
