@@ -46,13 +46,11 @@ Includes custom middleware to log every request in the following format
 [EjBHdKe1BK4XW7Hg] Started GET '/api/example'
 [EjBHdKe1BK4XW7Hg] Processing by API::Example/example
 [EjBHdKe1BK4XW7Hg]   Parameters: {}
-[EjBHdKe1BK4XW7Hg] Completed 200: total=2.33ms - db=0.0ms
+[EjBHdKe1BK4XW7Hg] Completed 200 in 3.21ms
 [EjBHdKe1BK4XW7Hg]
 ```
 
 _`EjBHdKe1BK4XW7Hg` is the id of the request_
-
-Adds `X-Runtime` and `X-DB-Runtime` to each response
 
 #### Error Handling
 
@@ -105,7 +103,7 @@ not_found! message: 'User was not found', code: '404.12'
 
 #### Automatic Model Annotation
 
-Makes use of the [annotate](https://github.com/ctran/annotate_models) gem to give helpful schema annotation comments above your Rails models automatically, whenever `rake db:migrate` is run
+Makes use of the [annotate gem](https://github.com/ctran/annotate_models) to give helpful schema annotation comments above your Rails models automatically, whenever `rake db:migrate` is run
 
 ```ruby
 # == Schema Information
