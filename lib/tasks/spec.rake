@@ -57,7 +57,7 @@ if %w[development test].include?(Rails.env)
     t.exclude_pattern = 'spec/integration/**{,/*/**}/*_spec.rb'
   end
 
-  task 'spec:all' => %w[spec:lint spec:fast spec:integration]
+  task 'spec:all' => %w[spec:fast spec:integration spec:lint]
 
   task(:default).clear
   task default: %w[rubocop spec:all]

@@ -8,7 +8,7 @@ end
 module API
   class Base < Grape::API
     use Grape::Middleware::Globals
-    use Middleware::Logger, headers: %w[cache-control]
+    use Middleware::Logger
 
     prefix :api
     format :json

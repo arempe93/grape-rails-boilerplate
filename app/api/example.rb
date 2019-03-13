@@ -2,8 +2,11 @@
 
 module API
   class Example < API::Core
+    params do
+      optional :who, type: String, default: 'world'
+    end
     get :example do
-      { hello: 'world' }
+      { hello: params[:who] }
     end
   end
 end
