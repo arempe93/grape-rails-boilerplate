@@ -1,5 +1,5 @@
 --color
---require spec_helper
+--require spec_setup
 --format=documentation
 --fail-fast=10
 --profile 3
