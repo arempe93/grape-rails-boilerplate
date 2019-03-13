@@ -46,7 +46,7 @@ module Middleware
       response.tap do |(status, _headers, _body)|
         log_response(status)
       end
-    rescue => e
+    rescue StandardError => e
       log_error(e)
       raise e
     end
