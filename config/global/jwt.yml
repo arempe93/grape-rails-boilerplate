@@ -1,6 +1,6 @@
 development: &default
-  algorithm: HS256
-  expiration: <%= 1.month %>
+  alg: HS256
+  ttl: <%= 1.month %>
   # TODO: change name to application name
   issuer: YOURAPP
 
@@ -15,4 +15,4 @@ staging:
 
 production:
   <<: *default
-  expiration: <%= 1.week %>
+  ttl: <%= 5.minutes %>

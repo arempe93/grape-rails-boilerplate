@@ -18,10 +18,10 @@ module AuthenticationService
   end
 
   def verify(jwt)
-    SecureToken.validate(jwt).tap do |token|
-      return nil unless token
-      return nil unless whitelisted?(token)
-    end
+    token = SecureToken.validate!(jwt)
+    return nil unless whitelisted?(token)
+  rescue JWT::DecodeError
+    nil
   end
 
   ## private ##
@@ -36,6 +36,13 @@ module AuthenticationService
     end
   end
   private_class_method :add_to_whitelist
+
+  def remove_from_whitelist(token)
+    key = "#{KEY_PREFIX}#{token.sub}"
+
+    Redis.current.zrem(key, token.jti)
+  end
+  private_class_method :remove_from_whitelist
 
   def whitelisted?(token)
     key = "#{KEY_PREFIX}#{token[:sub]}"
